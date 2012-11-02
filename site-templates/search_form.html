@@ -1,0 +1,23 @@
+<html>
+<head>
+    <title>Search</title>
+</head>
+<body>
+    {% if error %}
+        <p style="color: red;">{{error}}</p>
+    {% endif %}
+    <form action="" method="get">
+        <input type="text" name="q" placeholder="Full Text"><br><br>
+        <input type="text" name="title" placeholder="Title"><br><br>
+        
+        <input type="text" name="brand" placeholder="Brand"><br><br>
+        Sory BY: <br>
+        <input type="radio" name="sort_by" value="price">Price<br>
+        <input type="radio" name="sort_by" value="discount">Discount<br>
+        <input type="radio" name="sort_by" value="date_of_fetch">Date of Fetch<br>
+        <br>
+        <input type="submit" value="Search">
+        
+    </form>
+</body>
+</html>
