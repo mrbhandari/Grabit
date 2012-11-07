@@ -1,0 +1,70 @@
+ssh -i rahulkey.pem ec2-user@ec2-54-243-61-145.compute-1.amazonaws.com
+pip install Django
+
+
+
+#install libxml2
+
+cd ~/../../../
+mkdir /tmp/libxml2
+cd /tmp/libxml2
+wget ftp://xmlsoft.org/libxml2/libxml2-2.7.3.tar.gz
+cd /tmp/libxml2
+gzip -dc < libxml2-2.7.3.tar.gz | tar -xf -
+cd libxml2-2.7.3
+./configure --prefix=/usr
+make
+sudo make install
+
+
+#install xslt
+cd ~/../../../
+mkdir /tmp/xslt
+cd /tmp/xslt
+wget ftp://xmlsoft.org/libxslt/libxslt-1.1.22.tar.gz
+cd /tmp/xslt
+gzip -dc < libxslt-1.1.22.tar.gz | tar -xf -
+cd libxslt-1.1.22
+./configure --prefix=/usr
+make
+sudo make install
+
+
+#python-dev
+yum install python-devel
+
+
+pip install lxml
+pip install beautiful soup
+yum install make
+
+#moved files to site-packages
+
+ldconfig /~/../usr
+export DJANGO_SETTINGS_MODULE=mysite.settings
+
+
+
+
+# USE THIS: http://rhodesmill.org/brandon/2009/installing-lxml-on-webfaction/
+$ cd ~
+$ mkdir usr
+$ mkdir usr/src
+$ cd usr/src
+$ wget ftp://xmlsoft.org/.../libxml2-2.7.3.tar.gz
+$ wget ftp://xmlsoft.org/.../libxslt-1.1.24.tar.gz
+$ tar xfz libxml2-2.7.3.tar.gz
+$ tar xfz libxslt-1.1.24.tar.gz
+$ cd libxml2-2.7.3
+$ ./configure --prefix ~/usr
+$ make install
+$ cd ..
+$ cd libxslt-1.1.24
+$ ./configure --prefix ~/usr
+$ make install
+$ cd ..
+$ PATH=$HOME/usr/bin:$PATH
+$ wget http://pypi.python.org/.../lxml-2.2.2.tar.gz
+$ tar xfz lxml-2.2.2.tar.gz
+$ cd lxml-2.2.2
+$ python setup.py install
