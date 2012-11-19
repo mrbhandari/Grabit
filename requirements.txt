@@ -19,10 +19,7 @@ cd distribute-0.6.27
 python2.7 setup.py install
 easy_install-2.7 virtualenv
 
-
-
-# http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
-
+# Virtual env http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
 sudo easy_install virtualenv
 cd /
 mkdir project
@@ -30,84 +27,27 @@ cd project
 virtualenv --no-site-packages hugoFetch
 cd hugoFetch
 source bin/activate
+
+# install packages
 pip install beautifulsoup4
 pip install Django
+#http://blog.humaneguitarist.org/tag/amazon/
+yum install libxml2-devel #http://drunks-and-lampposts.com/2012/01/19/ec2-tutorials-installing-new-software-yum-pip-easy_install-sudo-apt/
+yum install libxml2
+yum install libxslt
+yum install libxslt-devel
+pip instal lxml
 
-
-
+#get git repo
 cd ../../..
 git clone https://github.com/mrbhandari/Grabit.git
 cd Grabit/mysite/
 python manage.py runserver 0.0.0.0:80
 
 
+cd Grabit/mysite/
+mkdir temp
 
-
-
-
-#install libxml2
-
-wget http://xmlsoft.org/sources/libxml2-2.9.0.tar.gz
-tar xf libxml2-2.9.0.tar.gz
-cd libxml2-2.9.0
-./configure --prefix=/usr --disable-static && make
-make install
-
-#repeat process with libsxlt
-wget http://xmlsoft.org/sources/libxslt-1.1.22.tar.gz
-tar xf libxslt-1.1.22.tar.gz
-cd libxslt-1.1.22
-./configure --prefix=/usr && make
-make install
-
-
-
-#install xslt
-cd ~/../../../
-mkdir /tmp/xslt
-cd /tmp/xslt
-wget ftp://xmlsoft.org/libxslt/libxslt-1.1.22.tar.gz
-cd /tmp/xslt
-gzip -dc < libxslt-1.1.22.tar.gz | tar -xf -
-cd libxslt-1.1.22
-./configure --prefix=/usr
-make
-sudo make install
-
-
-
-
-
-pip install lxml
-
-
-#moved files to site-packages
-
-ldconfig /~/../usr
+# to run hugo
+#ldconfig /~/../usr
 export DJANGO_SETTINGS_MODULE=mysite.settings
-
-
-
-
-# USE THIS: http://rhodesmill.org/brandon/2009/installing-lxml-on-webfaction/
-$ cd ~
-$ mkdir usr
-$ mkdir usr/src
-$ cd usr/src
-$ wget ftp://xmlsoft.org/.../libxml2-2.7.3.tar.gz
-$ wget ftp://xmlsoft.org/.../libxslt-1.1.24.tar.gz
-$ tar xfz libxml2-2.7.3.tar.gz
-$ tar xfz libxslt-1.1.24.tar.gz
-$ cd libxml2-2.7.3
-$ ./configure --prefix ~/usr
-$ make install
-$ cd ..
-$ cd libxslt-1.1.24
-$ ./configure --prefix ~/usr
-$ make install
-$ cd ..
-$ PATH=$HOME/usr/bin:$PATH
-$ wget http://pypi.python.org/.../lxml-2.2.2.tar.gz
-$ tar xfz lxml-2.2.2.tar.gz
-$ cd lxml-2.2.2
-$ python setup.py install

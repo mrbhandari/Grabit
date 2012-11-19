@@ -1,4 +1,5 @@
 .DS_Store
 mysite/temp/
 *.db
-backup/**
+backup/*
+mysite/pdb.db

@@ -297,7 +297,7 @@ def prod_fetch_hb(product_url):
 	
 	with open(fname, 'r') as f:
 	    html_doc = f.read()
-	soup = BeautifulSoup(html_doc)
+	soup = BeautifulSoup(html_doc, "xml")
 	
 	raw_msrp = soup.find("div", class_="standardprice").string
 	msrp =	util.clean_num(raw_msrp)
@@ -419,48 +419,55 @@ print list_of_product_urls
 for product_url in list_of_product_urls:
 	#pdata =
 	if 'neimanmarcus.com' in product_url:
-	    p_data = prod_fetch_nm(product_url)
+	    try:
+		p_data = prod_fetch_nm(product_url)
+	    except:
+		print "xxxxxxxxxxxxxxxxxxFAILED for: " + product_url
 	elif 'hugoboss.com' in product_url:
-	    p_data = prod_fetch_hb(product_url)
-	try:
-	    brandobj = Brand.objects.get(name=p_data['brand'])
-	    print "brand exists"
-	except:    
-	    b1 = Brand(name=p_data['brand'])
-	    b1.save()
-	finally:
-	    print p_data['discount']
-	    p1 = Product(
-		category=Category.objects.get(name=p_data['category']),
-		meta_description=p_data['meta_description'],
-		meta_title=p_data['meta_title'],
-		meta_keywords=p_data['meta_keywords'],
-		description=p_data['description'],
-		title=p_data['title'],
-		url=product_url, country=p_data['country'],
-		brand=Brand.objects.get(name=p_data['brand']),
-		retailer=Retailer.objects.get(code=p_data['retailer_code']),
-		reviews=p_data['reviews'],
-		color=p_data['color'],
-		image_url=p_data['image_url'],
-		rel_canon=p_data['rel_canon'],
-		date_of_fetch=p_data['date_of_fetch'],
-		site_pid=p_data['site_pid'],
-		price=p_data['price'],
-		msrp=p_data['msrp'],
-		size=p_data['size'],
-		discount=p_data['discount'],
-		)
-	    p1.save()
-	    
-	    #product = Product_ob(pdata)
-	    #print product
-	    #p1 = Product(product.__str__)
-	    #p1.save()
-	    print 'xxxxxxxx'
-    #	writer.writerow(product.create_dict())
-    #except:
-    #	"DID NOT WORK"
-    #finally:
-    #    f.close()
+	    try:
+		p_data = prod_fetch_hb(product_url)
+	    except:
+		print "xxxxxxxxxxxxxxxxxxFAILED for: " + product_url
+	if p_data:
+	    try:
+		brandobj = Brand.objects.get(name=p_data['brand'])
+		print "brand exists"
+	    except:    
+		b1 = Brand(name=p_data['brand'])
+		b1.save()
+	    finally:
+		print p_data['discount']
+		p1 = Product(
+		    category=Category.objects.get(name=p_data['category']),
+		    meta_description=p_data['meta_description'],
+		    meta_title=p_data['meta_title'],
+		    meta_keywords=p_data['meta_keywords'],
+		    description=p_data['description'],
+		    title=p_data['title'],
+		    url=product_url, country=p_data['country'],
+		    brand=Brand.objects.get(name=p_data['brand']),
+		    retailer=Retailer.objects.get(code=p_data['retailer_code']),
+		    reviews=p_data['reviews'],
+		    color=p_data['color'],
+		    image_url=p_data['image_url'],
+		    rel_canon=p_data['rel_canon'],
+		    date_of_fetch=p_data['date_of_fetch'],
+		    site_pid=p_data['site_pid'],
+		    price=p_data['price'],
+		    msrp=p_data['msrp'],
+		    size=p_data['size'],
+		    discount=p_data['discount'],
+		    )
+		p1.save()
+		
+		#product = Product_ob(pdata)
+		#print product
+		#p1 = Product(product.__str__)
+		#p1.save()
+		print 'xxxxxxxx'
+	#	writer.writerow(product.create_dict())
+	#except:
+	#	"DID NOT WORK"
+	#finally:
+	#    f.close()
 
