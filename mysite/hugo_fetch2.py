@@ -15,6 +15,8 @@ from os.path import isfile, getsize
 
 
 import logging
+with open('productFetch.log', 'w'):	#clear logging file
+    pass
 logging.basicConfig(filename='productFetch.log',level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 logging.debug('This message should go to the log file')
 

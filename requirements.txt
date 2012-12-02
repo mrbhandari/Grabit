@@ -57,19 +57,19 @@ export DJANGO_SETTINGS_MODULE=mysite.settings
 yum -y install httpd
 yum -y install mod_wsgi
 
-
+#starting and restarting server
 sudo service httpd start
 sudo service httpd restart
 
-import os
-import sys
-import site
+#setting up a cron job
 
-site.addsitedir('/srv/python-environments/saltycrane/lib/python2.5/site-packages')
+cd /Grabit/mysite/hugo_fetch2.py 
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'iwiwdsmi.settings'
+#shell script
+sudo sh
+cd /project/hugoFetch/
+source bin/activate
+cd /Grabit/mysite/
+export DJANGO_SETTINGS_MODULE=mysite.settings
+python hugo_fetch2.py 
 
-sys.path.append('/srv/SaltyCrane')
-
-import django.core.handlers.wsgi
-application = django.core.handlers.wsgi.WSGIHandler()

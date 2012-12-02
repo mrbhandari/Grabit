@@ -31,7 +31,7 @@ def search(request):
              #'query': q
              })
     else:
-        error = "please enter a term"
+        error = "Please enter text in atleast one of the boxes below."
         return render_to_response('search_form.html',
                                   {'error':error})
 

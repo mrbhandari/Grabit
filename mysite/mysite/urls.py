@@ -8,7 +8,7 @@ from mysite.views import hello, search
 # admin.autodiscover()
 
 urlpatterns = patterns('',
-                       ('^hello/$', hello),
+                       (r'^$', search),
                        (r'^admin/', include(admin.site.urls)),
                        (r'^search/$', search),
 )

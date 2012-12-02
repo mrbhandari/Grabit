@@ -1,23 +1,47 @@
 <html>
 <head>
     <title>Search</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"> 
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.css" />
+    <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.js"></script>
 </head>
 <body>
-    {% if error %}
-        <p style="color: red;">{{error}}</p>
-    {% endif %}
-    <form action="" method="get">
-        <input type="text" name="q" placeholder="Full Text"><br><br>
-        <input type="text" name="title" placeholder="Title"><br><br>
-        
-        <input type="text" name="brand" placeholder="Brand"><br><br>
-        Sory BY: <br>
-        <input type="radio" name="sort_by" value="price">Price<br>
-        <input type="radio" name="sort_by" value="discount">Discount<br>
-        <input type="radio" name="sort_by" value="date_of_fetch">Date of Fetch<br>
-        <br>
-        <input type="submit" value="Search">
-        
-    </form>
+    <div data-role="page">
+        <div data-role="header"><h1>Welcome to Vidzea</h1></div>
+        <div data-role="content">
+            {% if error %}
+                <p style="color: blue;">{{error}}</p>
+            {% endif %}
+            
+            
+            <form action="search" method="get" data-ajax="false">
+                <fieldset>
+                 <div data-role="fieldcontain">
+                    
+                    <input id="q" type="text" name="q" placeholder="Full text search"><br><br>
+                    <input id="title" type="text" name="title" placeholder="Title"><br><br>
+                    <input id="brand" type="text" name="brand" placeholder="Brand"><br><br>
+                
+                    <fieldset data-role="controlgroup">
+                        <legend>Sort By</legend>
+                            <input type="radio" name="sort_choice" id="date_of_fetch" value="date_of_fetch" checked="checked" />
+                            <label for="date_of_fetch">Newest</label>
+                            
+                            <input type="radio" name="sort_choice" id="price" value="price"/>
+                            <label for="price">Price</label>
+    
+                            <input type="radio" name="sort_choice" id="discount" value="discount"/>
+                            <label for="discount">Discount</label>                                                  
+                    </fieldset>
+                    <br>
+                    <button type="submit" data-theme="a" name="submit">Search</button>
+                </fieldset>
+            </form>
+            
+            </div>
+        </div>
+        <div data-role="footer"><h4>&copyVidzea Dec 2012</h4></div>
+    </div>
 </body>
 </html>
