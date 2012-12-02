@@ -3,3 +3,4 @@ mysite/temp/
 *.db
 backup/*
 mysite/pdb.db
+*.log
