@@ -13,12 +13,20 @@ from product_data.models import *
 from bs4 import BeautifulSoup
 from os.path import isfile, getsize
 
+
+import logging
+logging.basicConfig(filename='productFetch.log',level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+logging.debug('This message should go to the log file')
+
 def modification_date(filename):
     t = os.path.getmtime(filename)
     return datetime.datetime.fromtimestamp(t)
 
-# fd = urllib2.urlopen(url)
 
+def counter(object):
+    pass
+
+counter.tried_seeds, counter.tired_product_urls, counter.new_parsed_urls, counter.success_products = 0, 0, 0, 0
 path_saved_requests = "temp/"
 
 list_of_cols = ['retailer_code',		
@@ -137,6 +145,7 @@ class Utilities(object):
 		    read_product_url = urllib2.urlopen(product_url)
 		    sleep(randint(10,100)/10)
 		    self.save_file(read_product_url.read(), fname)
+		    counter.new_parsed_urls += 1
 	    return doc
 
 		
@@ -397,6 +406,7 @@ crawler_seed = ["""http://www.neimanmarcus.com/etemplate/et1.jsp?itemId=cat98073
 		"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=600&sz=120""",
 		]
 
+counter.tried_seeds = len(crawler_seed)
 
 
 for cat_page in crawler_seed:
@@ -417,6 +427,7 @@ for cat_page in crawler_seed:
 print list_of_product_urls
 
 for product_url in list_of_product_urls:
+	counter.tired_product_urls += 1
 	#pdata =
 	if 'neimanmarcus.com' in product_url:
 	    try:
@@ -444,7 +455,8 @@ for product_url in list_of_product_urls:
 		    meta_keywords=p_data['meta_keywords'],
 		    description=p_data['description'],
 		    title=p_data['title'],
-		    url=product_url, country=p_data['country'],
+		    url=product_url,
+		    country=p_data['country'],
 		    brand=Brand.objects.get(name=p_data['brand']),
 		    retailer=Retailer.objects.get(code=p_data['retailer_code']),
 		    reviews=p_data['reviews'],
@@ -458,16 +470,19 @@ for product_url in list_of_product_urls:
 		    size=p_data['size'],
 		    discount=p_data['discount'],
 		    )
-		p1.save()
-		
-		#product = Product_ob(pdata)
-		#print product
-		#p1 = Product(product.__str__)
-		#p1.save()
-		print 'xxxxxxxx'
-	#	writer.writerow(product.create_dict())
-	#except:
-	#	"DID NOT WORK"
-	#finally:
-	#    f.close()
+		try:
+		    p1.save()
+		    counter.success_products += 1
+		    print 'xxxxxxxx'
+		except:
+		    logging.warning('Product failed save %s' % product_url)
 
+logging.debug('Tried to fetch %s seeds' % counter.tried_seeds)
+logging.debug('Tried to fetch %s product_urls' % counter.tired_product_urls)
+logging.debug('Created %s new product files saved' % counter.new_parsed_urls)
+logging.debug('Saved %s files to pdb' % counter.success_products)
+
+print 'Tried to fetch %s seeds' % counter.tried_seeds
+print 'Tried to fetch %s product_urls' % counter.tired_product_urls
+print 'Created %s new product files saved' % counter.new_parsed_urls
+print 'Saved %s files to pdb' % counter.success_products

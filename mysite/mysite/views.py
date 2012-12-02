@@ -8,15 +8,18 @@ from product_data.models import *
 
 
 def search(request):
-    if 'q' in request.GET and request.GET['q']:
-        q = request.GET['q']
-        products = Product.objects.filter(description__icontains=q)
-    if 'brand' in request.GET and request.GET['brand']:
-        brand = request.GET['brand']
-        products = Product.objects.filter(title__icontains=brand)
-    if 'title' in request.GET and request.GET['title']:
-        title = request.GET['title']
-        products = Product.objects.filter(title__icontains=title)
+    if 'q' in request.GET or 'brand' in request.GET or 'title' in request.GET:
+        if 'q' in request.GET and request.GET['q']:
+            q = request.GET['q']
+            print q
+            products = Product.objects.filter(description__icontains=q)
+            print products
+        if 'brand' in request.GET and request.GET['brand']:
+            brand = request.GET['brand']
+            products = Product.objects.filter(title__icontains=brand)
+        if 'title' in request.GET and request.GET['title']:
+            title = request.GET['title']
+            products = Product.objects.filter(title__icontains=title)
         if 'sort_by' in request.GET and request.GET['sort_by']:
             sort_by = request.GET['sort_by']
             if sort_by == 'discount':
