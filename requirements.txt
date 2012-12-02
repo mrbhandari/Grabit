@@ -51,3 +51,22 @@ mkdir temp
 # to run hugo
 #ldconfig /~/../usr
 export DJANGO_SETTINGS_MODULE=mysite.settings
+
+
+#install a real server
+yum -y install httpd
+yum -y install mod_wsgi
+
+
+import os
+import sys
+import site
+
+site.addsitedir('/srv/python-environments/saltycrane/lib/python2.5/site-packages')
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'iwiwdsmi.settings'
+
+sys.path.append('/srv/SaltyCrane')
+
+import django.core.handlers.wsgi
+application = django.core.handlers.wsgi.WSGIHandler()
