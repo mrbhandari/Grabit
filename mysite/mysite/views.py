@@ -13,7 +13,8 @@ def search(request):
             q = request.GET['q']
             print q
             products = Product.objects.filter(description__icontains=q)
-            print products
+            print products[1].brand
+            print len(products)
         if 'brand' in request.GET and request.GET['brand']:
             brand = request.GET['brand']
             products = Product.objects.filter(title__icontains=brand)
