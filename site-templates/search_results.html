@@ -17,16 +17,19 @@
     </div>
 </body>
 
-
+{% load productdata_extras %}
 {% if products %}
     <h2>Found {{ products|length }} product{{ products|pluralize }}.</h2>
     <ul>
-        {% for product in products %}
-        <h3>{{ product.brand }}, ${{ product.price }}, {{ product.discount }}% discount</h3>
-        <a  href={{ product.rel_canon }}><img src={{ product.image_url }}></a>
-        <h4><a href={{ product.rel_canon }}>{{ product.title }}</a></h4>
-        <h4>{{ product.size }}</h4>
-        {% endfor %}
+        
+        {% for x in products|length|get_range %}
+        <!--{% for product in products %}-->
+            {{ products[x] }}
+            <h3>{{ product[x].brand }}, ${{ product.price }}, {{ product.discount }}% discount</h3>
+            <a  href={{ product.rel_canon }}><img src={{ product.image_url }}></a>
+            <h4><a href={{ product.rel_canon }}>{{ product.title }}</a></h4>
+            <h4>{{ product.size }}</h4>
+            {% endfor %}
     </ul>
 {% else %}
     <p>No product matched your search criteria.</p>
