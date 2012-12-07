@@ -6,34 +6,96 @@
     <link rel="stylesheet" href="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.css" />
     <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
     <script src="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.js"></script>
+    <style media="screen" type="text/css">
+
+    /*Add style rules here*/
+
+    .resultTitle {
+    -webkit-font-smoothing: antialiased;
+    font-size: 15px;
+    text-transform: none;
+    color: #333;
+    text-align: left;
+    margin-bottom: 20px;
+    }
+        
+    .img {
+    max-width: 90%;
+    height: auto;
+    width: auto\9; /* ie8 */
+    }
+    
+    .singleLineBrand {
+    text-align: left;
+    max-width: 90%;
+    font-size: 13px;
+    font-weight: bold;
+    display: block;
+    min-height: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 10px;
+    }
+    
+    .articleCellTitle {
+    font-weight: bold;
+    position: relative;
+    top: 13px;
+    bottom: 5px;
+    left: 9px;
+    white-space: normal;
+    text-align: left;
+    line-height: 16px;
+    font-size: 12px;
+    max-width: 90%;
+    margin: 3px;
+    margin-bottom: 20px;
+    padding: 3px;
+    }
+    </style>
 </head>
 
 <body>
-    <div data-role="header"><h1>You searched for: <strong>{{ query }}</strong></h1></div>    
+    <div data-role="header"><h1>Search Results<strong>{{ query }}</strong></h1></div>    
     
     <div data-role="content">
+        
+    {% if products %}
+        <div class="resultTitle">Found {{ products|length }} product{{ products|pluralize }} matching your search</div>
+        <div class="ui-grid-a">
+            
+            {% for product in products %}
+            {% if forloop.counter0|divisibleby:2 %}<div class="ui-block-a">{% endif %}
+            {% if forloop.counter|divisibleby:2 %}<div class="ui-block-b">{% endif %}
+            
+            <div class="singleLineBrand">{{ product.brand }}
+                <br>
+                <span style="color: #EC1375">${{ product.price }}</span>
+                {% if product.discount%}<span style="color: #999; margin-left:5px">{{ product.discount|floatformat:"0" }}% off</span>{% endif %}
+                
+            </div>
+            <a  href={{ product.rel_canon }}><img class="img" src={{ product.image_url }}></a>
+            <div class="articleCellTitle">
+                <a href={{ product.rel_canon }}><span class="singleLineBrand" style="cursor: pointer; color: black; margin-bottom: 2px">{{ product.title }}</span></a>
+                <span style="font-size: 10px; color: #999">Size: {{ product.size }}</span>
+            </div>
+            </div>
+            
+            {% endfor %}
+        </div><!-- /grid-a -->    
+    {% else %}
+        <p>No product matched your search criteria.</p>
+    {% endif %}
+
+        
+        
+        
+        
         
         
     </div>
 </body>
 
-{% load productdata_extras %}
-{% if products %}
-    <h2>Found {{ products|length }} product{{ products|pluralize }}.</h2>
-    <ul>
-        
-        {% for x in products|length|get_range %}
-        <!--{% for product in products %}-->
-            {{ products[x] }}
-            <h3>{{ product[x].brand }}, ${{ product.price }}, {{ product.discount }}% discount</h3>
-            <a  href={{ product.rel_canon }}><img src={{ product.image_url }}></a>
-            <h4><a href={{ product.rel_canon }}>{{ product.title }}</a></h4>
-            <h4>{{ product.size }}</h4>
-            {% endfor %}
-    </ul>
-{% else %}
-    <p>No product matched your search criteria.</p>
-{% endif %}
 
 
 </html>
