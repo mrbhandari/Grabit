@@ -1,3 +1,4 @@
+import collections
 import urllib2
 from lxml import etree
 from lxml.html import parse
@@ -153,6 +154,150 @@ class Utilities(object):
 		
 util = Utilities()
 	
+
+#For Nordstrom unction takes product_URL, and parses relevant data, returns a dictionary for the product
+def prod_fetch_nordstrom(product_url):
+	print product_url
+	retailer_code = "NRD"
+	doc = ''
+	
+	# finds the pid of a URL
+	def find_pid(product_url):
+		pid = {}
+		try:
+			pid = re.search('''/\d+\?''', product_url)
+			print pid, 'found'
+			pid = pid.group(0)
+			pid = pid.replace('/', '').replace('?', '')
+		except:
+			print "did not find PID in URL"
+			pid = "unknown_pid"
+		return pid
+	pid = find_pid(product_url)
+	fname = path_saved_requests + retailer_code + pid + ".txt"
+	doc = util.product_request(fname, product_url)
+	
+	#Parses data
+	meta_title, meta_keywords, meta_description, rel_canon = '', '', '', ''
+	
+	try:
+	    raw_msrp = doc.xpath('//span[@class="price regular"]/text()')[0]
+	    raw_msrp = raw_msrp.replace('Was: ','')
+	    msrp =	util.clean_num(raw_msrp)
+	    print msrp
+	except:
+	    msrp = .01
+	    print "no msrp found"
+	
+	try:
+	    raw_price = doc.xpath('//span[@class="price sale"]/text()')[0]
+	    raw_price = raw_price.replace('Now: ','')
+	    price =	util.clean_num(raw_price)
+	    print price
+	except:
+	    print "no sale price found"
+	    price = msrp
+	
+
+	
+	date_of_fetch = modification_date(fname)
+	
+	for a in doc.xpath('//div[@class="fashion-photo-wrapper"]//img'):
+		image_url = a.get('src')
+		print image_url
+	
+	
+	for a in doc.xpath('//h1/text()'):
+		if (a.strip()):
+			title = util.clean(a)
+			print title
+	
+	brand = ''
+	
+	for a in doc.xpath('//div[@class="brand-content"]//ul//li//a/text()'):
+	    print a
+	    brand = util.clean(a)
+	
+	if brand == '':
+	    brand = title.split()[0]
+	    print brand
+	
+	
+	for a in  doc.xpath('//meta[@name="title"]'):
+		meta_title = util.clean(a.get('content'))
+		print meta_title
+		
+	for a in doc.xpath('//meta[@name="description"]'):
+		meta_description = a.get('content')
+	meta_description = util.clean(meta_description)
+	print meta_description
+
+		
+	for a in doc.xpath('//meta[@name="keywords"]'):
+		meta_keywords = util.clean(a.get('content'))
+		print meta_keywords
+		
+	for a in doc.xpath('//link[@rel="canonical"]'):
+		rel_canon = a.get('href')
+		print "END REL"
+		print rel_canon
+		print "START REL"
+	
+	description = ''
+	for a in doc.xpath('//div[@class="content"]//text()'):
+		if (a.strip()):
+			description += util.clean(a)
+	print "START DESC"
+	print description
+	print "END DESC"
+
+	# find sizes and colors
+	arr = []
+	size = []
+	color = []
+	
+	for a in doc.xpath("//label/../..//li//label//text()"):
+	    print a
+	    color.append(a)
+	
+	for a in doc.xpath("//label/../..//a//label//text()"):
+	    print a
+	    size.append(a)
+	    
+	    
+	if color==[]:
+	    color='null';
+	if size==[]:
+	    size='null'
+
+	print size
+	print color
+	
+	country = ''
+	reviews = ''
+	
+	p_data = {}
+	p_data['retailer_code'] = retailer_code
+	p_data['brand'] = brand
+	p_data['category'] = util.category_finder(title, description)
+	p_data['price'] = price
+	p_data['msrp'] = msrp
+	p_data['date_of_fetch'] = date_of_fetch
+	p_data['site_pid'] = retailer_code + pid
+	p_data['url'] = product_url
+	p_data['reviews'] = reviews
+	p_data['image_url'] = image_url
+	p_data['title'] = title
+	p_data['size'] = str(size)
+	p_data['country'] = country
+	p_data['color'] = str(color)
+	p_data['description'] = description
+	p_data['meta_title'] = meta_title
+	p_data['meta_keywords'] = meta_keywords
+	p_data['meta_description'] = meta_description
+	p_data['rel_canon'] = rel_canon
+	p_data['discount'] = (msrp - price)/msrp*100
+	return p_data
 
 
 
@@ -398,14 +543,15 @@ list_of_product_urls = []
 
 
 
-crawler_seed = ["""http://www.neimanmarcus.com/etemplate/et1.jsp?itemId=cat980731&N=4294914706&siloId=cat980731&pageSize=9999""",
-		"""http://www.neimanmarcus.com/etemplate/et1.jsp?tv=lc&N=4294914706&st=s&pageSize=9999""",
-		"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?sz=120""",
-		"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=120&sz=120""",
-		"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=240&sz=120""",
-		"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=3600&sz=120""",
-		"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=480&sz=120""",
-		"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=600&sz=120""",
+crawler_seed = ["""http://shop.nordstrom.com/c/all-mens-sale?page=1"""
+		#"""http://www.neimanmarcus.com/etemplate/et1.jsp?itemId=cat980731&N=4294914706&siloId=cat980731&pageSize=99999""",
+		#"""http://www.neimanmarcus.com/etemplate/et1.jsp?tv=lc&N=4294914706&st=s&pageSize=99999""",
+		#"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?sz=120""",
+		#"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=120&sz=120""",
+		#"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=240&sz=120""",
+		#"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=3600&sz=120""",
+		#"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=480&sz=120""",
+		#"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=600&sz=120""",
 		]
 
 counter.tried_seeds = len(crawler_seed)
@@ -425,12 +571,35 @@ for cat_page in crawler_seed:
 	for a in doc.xpath('//div[@class="productimage"]//a'):
 	    print a.get('href')
 	    list_of_product_urls.append(rel_url + a.get('href'))
+    if 'nordstrom.com' in cat_page:
+	for i in range(1,6):
+	    len_list = len(list_of_product_urls)
+	    cat_page_each = re.sub("page=1", "page="+str(i), cat_page)
+	    print cat_page_each
+	    rel_url = """http://shop.nordstrom.com"""
+	    doc = parse(cat_page_each).getroot()
+	    print doc
+	    
+	    #read_product_url = urllib2.urlopen(cat_page_each)
+	    #read_doc = read_product_url.read()
+	    #print read_doc.split('div')[1:5]
+	    #
+	    #print '\n\n\n\n\n\n\n\n\n\n\n\n'
+	    #for a in  doc.xpath('//meta[@name="title"]'):
+		#print a.get('content')
+		#meta_title = util.clean(a.get('content'))
+    		#print meta_title
+	    for a in doc.xpath('//div[@class="info new-markdown men adult"]//a'):
+		list_of_product_urls.append(rel_url + a.get('href'))
+	    for a in doc.xpath('//div[@class="info default men adult"]//a'):
+		list_of_product_urls.append(rel_url + a.get('href'))
+	    if len_list == len(list_of_product_urls):
+		break
 
 print list_of_product_urls
 
 for product_url in list_of_product_urls:
 	counter.tired_product_urls += 1
-	#pdata =
 	if 'neimanmarcus.com' in product_url:
 	    try:
 		p_data = prod_fetch_nm(product_url)
@@ -441,6 +610,11 @@ for product_url in list_of_product_urls:
 		p_data = prod_fetch_hb(product_url)
 	    except:
 		print "xxxxxxxxxxxxxxxxxxFAILED for: " + product_url
+	elif 'nordstrom.com' in product_url:
+	    #try:
+	    p_data = prod_fetch_nordstrom(product_url)
+	    #except:
+		#print "xxxxxxxxxxxxxxxxxxFAILED for: " + product_url	
 	if p_data:
 	    try:
 		brandobj = Brand.objects.get(name=p_data['brand'])
@@ -448,6 +622,12 @@ for product_url in list_of_product_urls:
 	    except:    
 		b1 = Brand(name=p_data['brand'])
 		b1.save()
+	    try:
+		retailer=Retailer.objects.get(code=p_data['retailer_code'])
+		print "retailer exists"
+	    except:    
+		r1 = Retailer(code=p_data['retailer_code'])
+		r1.save()
 	    finally:
 		print p_data['discount']
 		p1 = Product(
@@ -478,6 +658,8 @@ for product_url in list_of_product_urls:
 		    print 'xxxxxxxx'
 		except:
 		    logging.warning('Product failed save %s' % product_url)
+	else:
+	    print "no p_data exists"
 
 logging.debug('Tried to fetch %s seeds' % counter.tried_seeds)
 logging.debug('Tried to fetch %s product_urls' % counter.tired_product_urls)
