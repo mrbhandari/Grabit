@@ -544,14 +544,14 @@ list_of_product_urls = []
 
 
 crawler_seed = ["""http://shop.nordstrom.com/c/all-mens-sale?page=1"""
-		#"""http://www.neimanmarcus.com/etemplate/et1.jsp?itemId=cat980731&N=4294914706&siloId=cat980731&pageSize=99999""",
-		#"""http://www.neimanmarcus.com/etemplate/et1.jsp?tv=lc&N=4294914706&st=s&pageSize=99999""",
-		#"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?sz=120""",
-		#"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=120&sz=120""",
-		#"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=240&sz=120""",
-		#"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=3600&sz=120""",
-		#"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=480&sz=120""",
-		#"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=600&sz=120""",
+		"""http://www.neimanmarcus.com/etemplate/et1.jsp?itemId=cat980731&N=4294914706&siloId=cat980731&pageSize=99999""",
+		"""http://www.neimanmarcus.com/etemplate/et1.jsp?tv=lc&N=4294914706&st=s&pageSize=99999""",
+		"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?sz=120""",
+		"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=120&sz=120""",
+		"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=240&sz=120""",
+		"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=3600&sz=120""",
+		"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=480&sz=120""",
+		"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?start=600&sz=120""",
 		]
 
 counter.tried_seeds = len(crawler_seed)
@@ -572,7 +572,7 @@ for cat_page in crawler_seed:
 	    print a.get('href')
 	    list_of_product_urls.append(rel_url + a.get('href'))
     if 'nordstrom.com' in cat_page:
-	for i in range(1,6):
+	for i in range(1,1000):
 	    len_list = len(list_of_product_urls)
 	    cat_page_each = re.sub("page=1", "page="+str(i), cat_page)
 	    print cat_page_each
