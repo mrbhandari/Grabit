@@ -215,6 +215,7 @@ def prod_fetch_nordstrom(product_url):
 	brand = ''
 	
 	for a in doc.xpath('//div[@class="brand-content"]//ul//li//a/text()'):
+	    a = a.encode('utf-8')
 	    print a
 	    brand = util.clean(a)
 	
@@ -543,7 +544,7 @@ list_of_product_urls = []
 
 
 
-crawler_seed = ["""http://shop.nordstrom.com/c/all-mens-sale?page=1"""
+crawler_seed = ["""http://shop.nordstrom.com/c/all-mens-sale?page=1""",
 		"""http://www.neimanmarcus.com/etemplate/et1.jsp?itemId=cat980731&N=4294914706&siloId=cat980731&pageSize=99999""",
 		"""http://www.neimanmarcus.com/etemplate/et1.jsp?tv=lc&N=4294914706&st=s&pageSize=99999""",
 		"""http://store-us.hugoboss.com/sale/mens-clothing-and-accessories/71234,en_US,sc.html?sz=120""",
@@ -572,29 +573,24 @@ for cat_page in crawler_seed:
 	    print a.get('href')
 	    list_of_product_urls.append(rel_url + a.get('href'))
     if 'nordstrom.com' in cat_page:
-	for i in range(1,1000):
+	go=True
+	i = 1
+	while go==True:
 	    len_list = len(list_of_product_urls)
+	    print len(list_of_product_urls)
 	    cat_page_each = re.sub("page=1", "page="+str(i), cat_page)
 	    print cat_page_each
 	    rel_url = """http://shop.nordstrom.com"""
 	    doc = parse(cat_page_each).getroot()
-	    print doc
 	    
-	    #read_product_url = urllib2.urlopen(cat_page_each)
-	    #read_doc = read_product_url.read()
-	    #print read_doc.split('div')[1:5]
-	    #
-	    #print '\n\n\n\n\n\n\n\n\n\n\n\n'
-	    #for a in  doc.xpath('//meta[@name="title"]'):
-		#print a.get('content')
-		#meta_title = util.clean(a.get('content'))
-    		#print meta_title
 	    for a in doc.xpath('//div[@class="info new-markdown men adult"]//a'):
 		list_of_product_urls.append(rel_url + a.get('href'))
 	    for a in doc.xpath('//div[@class="info default men adult"]//a'):
 		list_of_product_urls.append(rel_url + a.get('href'))
+	    print len(list_of_product_urls)
 	    if len_list == len(list_of_product_urls):
-		break
+		go=False
+	    i = i + 1
 
 print list_of_product_urls
 
@@ -611,10 +607,10 @@ for product_url in list_of_product_urls:
 	    except:
 		print "xxxxxxxxxxxxxxxxxxFAILED for: " + product_url
 	elif 'nordstrom.com' in product_url:
-	    #try:
-	    p_data = prod_fetch_nordstrom(product_url)
-	    #except:
-		#print "xxxxxxxxxxxxxxxxxxFAILED for: " + product_url	
+	    try:
+		p_data = prod_fetch_nordstrom(product_url)
+	    except:
+		print "xxxxxxxxxxxxxxxxxxFAILED for: " + product_url	
 	if p_data:
 	    try:
 		brandobj = Brand.objects.get(name=p_data['brand'])
