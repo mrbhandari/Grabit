@@ -8,7 +8,7 @@
 </head>
 <body>
     <div data-role="page">
-        <div data-role="header"><h1>Welcome to Vidzea</h1></div>
+        <div data-role="header"><h1>Find the Best Doctor</h1></div>
         <div data-role="content">
             {% if error %}
                 <p style="color: blue;">{{error}}</p>
@@ -17,25 +17,16 @@
             
             <form action="search" method="get" data-ajax="false">
                 <fieldset>
-                 <div data-role="fieldcontain">
+                 <div data-role="fieldcontain">    
                     
-                    <input id="q" type="text" name="q" placeholder="Full text search"><br><br>
-                    <input id="title" type="text" name="title" placeholder="Title"><br><br>
-                    <input id="brand" type="text" name="brand" placeholder="Brand"><br><br>
-                
-                    <fieldset data-role="controlgroup">
-                        <legend>Sort By</legend>
-                            <input type="radio" name="sort_choice" id="date_of_fetch" value="date_of_fetch" checked="checked" />
-                            <label for="date_of_fetch">Newest</label>
-                            
-                            <input type="radio" name="sort_choice" id="price" value="price"/>
-                            <label for="price">Price</label>
-    
-                            <input type="radio" name="sort_choice" id="discount" value="discount"/>
-                            <label for="discount">Discount</label>                                                  
-                    </fieldset>
+                    HCPCS Code (Required)
                     <br>
-                    <button type="submit" data-theme="a" name="submit">Search</button>
+                    <input id="hcpcs" type="text" name="hcpcs" placeholder="Enter HCPCS Code"><br><br>
+                    Find doctors in which state?
+                    <br>
+                    <input id="state" type="text" name="state" placeholder="State"><br><br>
+                    <br>
+                    <button type="submit" data-theme="a" name="submit">Find the Best Doctor</button>
                 </fieldset>
             </form>
             
