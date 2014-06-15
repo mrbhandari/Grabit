@@ -1,3 +1,4 @@
+#begin
 ssh -v -i rahulkey.pem ec2-user@ec2-54-243-61-145.compute-1.amazonaws.com
 sudo sh
 curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
