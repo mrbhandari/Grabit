@@ -61,27 +61,35 @@
     <div data-role="content">
         
     {% if products %}
-        <div class="resultTitle">Found {{ products|length }} product{{ products|pluralize }} matching your search</div>
+        <div class="resultTitle">Found {{ products|length }} matching your search</div>
         <div class="ui-grid-a">
-            
+        <table data-role="table" id="results" data-mode="reflow">
+         <thead>
+           <tr>
+               <th> NPI </th>
+               <th> First Name </th>
+               <th> Last Name </th>
+               <th> Number of procedures </th>
+               <th> Procedure description </th>
+               <th> City </th>
+               <th> State </th>
+           </tr>
+         </thead>
+     <tbody>
+       
             {% for product in products %}
-            {% if forloop.counter0|divisibleby:2 %}<div class="ui-block-a">{% endif %}
-            {% if forloop.counter|divisibleby:2 %}<div class="ui-block-b">{% endif %}
-            
-            <div class="singleLineBrand">{{ product.brand }}
-                <br>
-                <span style="color: #EC1375">${{ product.price }}</span>
-                {% if product.discount%}<span style="color: #999; margin-left:5px">{{ product.discount|floatformat:"0" }}% off</span>{% endif %}
-                
-            </div>
-            <a  href={{ product.rel_canon }}><img class="img" src={{ product.image_url }}></a>
-            <div class="articleCellTitle">
-                <a href={{ product.rel_canon }}><span class="singleLineBrand" style="cursor: pointer; color: black; margin-bottom: 2px">{{ product.title }}</span></a>
-                <span style="font-size: 10px; color: #999">Size: {{ product.size }}</span>
-            </div>
-            </div>
-            
+              <tr>
+              <td>{{product.0}}</td>
+              <td>{{product.1}} </td>
+              <td>{{product.2}} </td>
+              <td>{{product.3}}</td>
+              <td>{{product.4}} </td>
+              <td>{{product.5}} </td>
+              <td>{{product.6}} </td>
+               </tr>
             {% endfor %}
+     </tbody>
+    </table>  
         </div><!-- /grid-a -->    
     {% else %}
         <p>No product matched your search criteria.</p>

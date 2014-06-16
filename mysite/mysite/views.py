@@ -3,24 +3,43 @@ from django.shortcuts import render_to_response
 from django.template import Context
 from django.http import HttpResponse
 import datetime
+import MySQLdb
 from product_data.models import *
 
 
+def getResults(hcpcs, state):
+  db = MySQLdb.connect(host="localhost", # your host, usually localhost
+                     user="root", # your username
+                      passwd="", # your password
+                      db="doctors") # name of the data base
+
+  cur = db.cursor() 
+
+  # Use all the SQL you like
+  cur.execute("SELECT npi,first_name, last_name, num_services, hcpcs_description, city, state FROM medicare where hcpcs_code='" + hcpcs + "' and state = '" + state + "' ORDER BY num_services DESC LIMIT 10")
+
+  # print all the first cell of all the rows
+  
+  rows = cur.fetchall()
+  cur.close()
+  return rows
 
 def search(request):
-    if 'hcpcs' in request.GET or 'state' in request.GET:
+    if 'hcpcs' in request.GET and 'state' in request.GET:
         if 'hcpcs' in request.GET and request.GET['hcpcs']:
             hcpcs = request.GET['hcpcs']
-            print hcpcs
-            products = Product.objects.filter(description__icontains=q)
-            print products[1].brand
-            print len(products)
-        if 'brand' in request.GET and request.GET['brand']:
-            brand = request.GET['brand']
-            products = Product.objects.filter(title__icontains=brand)
-        if 'title' in request.GET and request.GET['title']:
-            title = request.GET['title']
-            products = Product.objects.filter(title__icontains=title)
+            state = request.GET['state']
+            results = getResults(hcpcs, state)
+            print results
+            #products = Product.objects.filter(description__icontains=q)
+            #print products[1].brand
+            #print len(products)
+        #if 'brand' in request.GET and request.GET['brand']:
+         #   brand = request.GET['brand']
+          #  products = Product.objects.filter(title__icontains=brand)
+        #if 'title' in request.GET and request.GET['title']:
+         #   title = request.GET['title']
+          #  products = Product.objects.filter(title__icontains=title)
         if 'sort_by' in request.GET and request.GET['sort_by']:
             sort_by = request.GET['sort_by']
             if sort_by == 'discount':
@@ -28,7 +47,7 @@ def search(request):
             else:
                 products = products.order_by('-'+sort_by)  
         return render_to_response('search_results.html',
-            {'products': products,
+            {'products': results
              #'query': q
              })
     else:
