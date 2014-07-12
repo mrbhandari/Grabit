@@ -1,43 +1,81 @@
 #begin
-ssh -v -i rahulkey.pem ec2-user@ec2-54-243-61-145.compute-1.amazonaws.com
-sudo sh
-curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
-curl http://python-distribute.org/distribute_setup.py | python
+#new user
+ssh -i rahulkey.pem ubuntu@ec2-54-91-82-107.compute-1.amazonaws.com
+# old user
+#ssh -v -i rahulkey.pem ec2-user@ec2-54-243-61-145.compute-1.amazonaws.com
+
+#install prereq for python
+sudo apt-get update
+sudo apt-get install build-essential
+sudo apt-get install libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev
+
+#get python
+mkdir ~/Downloads/
+cd ~/Downloads/
+wget http://python.org/ftp/python/2.7.5/Python-2.7.5.tgz
+tar -xvf Python-2.7.5.tgz
+cd Python-2.7.5
+./configure
+make
+sudo make altinstall
+
+
+#sudo sh
+
+#instlall pip, distribute py, django
+sudo apt-get install python-setuptools
+cd ..
+wget http://pypi.python.org/packages/source/p/pip/pip-1.1.tar.gz#md5=62a9f08dd5dc69d76734568a6c040508
+tar -xvf pip*.gz
+cd pip*
+sudo python setup.py install
+cd ..
+wget http://python-distribute.org/distribute_setup.py
+python distribute_setup.py
 pip install Django
 
-yum install curl-devel expat-devel gettext-devel \openssl-devel zlib-devel
-yum install git-core
-yum install make
-yum install gcc
-yum install python-devel
+sudo apt-get install git
+sudo apt-get install python2.7-dev
 pip install beautifulsoup4
-yum install python27
+pip install python-devel
+
+#yum install curl-devel expat-devel gettext-devel \openssl-devel zlib-devel
+#yum install git-core
+#yum install make
+#yum install gcc
+#yum install python27
 
 #install setup tools
-wget http://pypi.python.org/packages/source/d/distribute/distribute-0.6.27.tar.gz
-tar xf distribute-0.6.27.tar.gz
-cd distribute-0.6.27
-python2.7 setup.py install
-easy_install-2.7 virtualenv
+#wget http://pypi.python.org/packages/source/d/distribute/distribute-0.6.27.tar.gz
+#tar xf distribute-0.6.27.tar.gz
+#cd distribute-0.6.27
+#python2.7 setup.py install
+#easy_install-2.7 virtualenv
 
 # Virtual env http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
-sudo easy_install virtualenv
-cd /
-mkdir project
-cd project
-virtualenv --no-site-packages hugoFetch
-cd hugoFetch
-source bin/activate
+#sudo easy_install virtualenv
+#cd /
+#mkdir project
+#cd project
+#virtualenv --no-site-packages hugoFetch
+#cd hugoFetch
+#source bin/activate
 
 # install packages
-pip install beautifulsoup4
-pip install Django
+#pip install beautifulsoup4
+#pip install Django
 #http://blog.humaneguitarist.org/tag/amazon/
-yum install libxml2-devel #http://drunks-and-lampposts.com/2012/01/19/ec2-tutorials-installing-new-software-yum-pip-easy_install-sudo-apt/
-yum install libxml2
-yum install libxslt
-yum install libxslt-devel
-pip instal lxml
+#yum install libxml2-devel #http://drunks-and-lampposts.com/2012/01/19/ec2-tutorials-installing-new-software-yum-pip-easy_install-sudo-apt/
+
+apt-get install libxml2-dev libxslt1-dev python-dev
+apt install libxml2-dev
+apt install libxml2
+
+#apt install libxslt
+
+
+#yum install libxslt-devel
+pip install lxml
 
 #get git repo
 cd ../../..
@@ -72,5 +110,33 @@ cd /project/hugoFetch/
 source bin/activate
 cd /Grabit/mysite/
 export DJANGO_SETTINGS_MODULE=mysite.settings
-python hugo_fetch2.py 
+python hugo_fetch2.py
+
+
+#installing medicare table and creating the fields
+python manage.py validate
+python manage.py sqlall product_data
+#check output then ...
+python manage.py syncdb
+
+#create table medicare ( npi varchar(10), last_name varchar(100), first_name varchar(100), middle_name varchar(100), credentials varchar(1000), gender varchar(10), entity_code varchar(2), street1 varchar(1024), street2 varchar(1024), city varchar(1024), zip_code varchar(100), state varchar(512), country varchar(100), provider_type varchar(1024), medicare_indicator varchar(2), place_of_service varchar(10), hcpcs_code varchar(100), hcpcs_description varchar(1024), num_services int, num_uniq_users int, num_uniq_users_per_day int, avg_medicare_amt double, std_dev_medicare_amt double, avg_submitted_amt  double, std_dev_submitted_amt double, avg_medicare_payment double, std_dev_medicare_payment double);
+
+#load data
+mysql --local-infile -u root -p
+use doctors;
+LOAD DATA LOCAL INFILE '~/Downloads/medicare.tsv' into TABLE product_data_medicare LINES TERMINATED BY '\n';
+
+ALTER TABLE product_data_medicare ADD id int;
+#add index speed up performance
+ALTER TABLE `product_data_medicare` ADD INDEX `hcpcs_code` (`hcpcs_code`)
+
+
+#rahul local server start
+/opt/local/share/mysql5/mysql/mysql.server start
+
+
+
+
+
+
 

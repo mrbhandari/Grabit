@@ -62,7 +62,6 @@
         
     {% if products %}
         <div class="resultTitle">Found {{ products|length }} matching your search</div>
-        <div class="ui-grid-a">
         <table data-role="table" id="results" data-mode="reflow">
          <thead>
            <tr>
@@ -90,7 +89,6 @@
             {% endfor %}
      </tbody>
     </table>  
-        </div><!-- /grid-a -->    
     {% else %}
         <p>No product matched your search criteria.</p>
     {% endif %}

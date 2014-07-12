@@ -5,18 +5,19 @@ from django.http import HttpResponse
 import datetime
 import MySQLdb
 from product_data.models import *
+from django.utils import simplejson
 
 
 def getResults(hcpcs, state):
   db = MySQLdb.connect(host="localhost", # your host, usually localhost
                      user="root", # your username
-                      passwd="", # your password
+                      passwd="thebakery", # your password
                       db="doctors") # name of the data base
 
   cur = db.cursor() 
 
   # Use all the SQL you like
-  cur.execute("SELECT npi,first_name, last_name, num_services, hcpcs_description, city, state FROM medicare where hcpcs_code='" + hcpcs + "' and state = '" + state + "' ORDER BY num_services DESC LIMIT 10")
+  cur.execute("SELECT npi,first_name, last_name, num_services, hcpcs_description, city, state FROM medicare where hcpcs_code='" + hcpcs + "' and state = '" + state + "' ORDER BY num_services DESC LIMIT 100")
 
   # print all the first cell of all the rows
   
@@ -24,11 +25,54 @@ def getResults(hcpcs, state):
   cur.close()
   return rows
 
+def hcpcs_autosuggest(request):
+    if 'term' in request.GET:
+        search = request.GET['term']
+        
+        db = MySQLdb.connect(host="localhost", # your host, usually localhost
+                     user="root", # your username
+                      passwd="thebakery", # your password
+                      db="doctors") # name of the data base
+
+        cur = db.cursor() 
+      
+        # Use all the SQL you like
+        print "SELECT * FROM hcpcs_autosuggest where (hcpcs_code like '%" + search + "%' or hcpcs_description like '%" + search + "%') LIMIT 100;"
+        cur.execute("SELECT * FROM hcpcs_autosuggest where (hcpcs_code like '%" + search + "%' or hcpcs_description like '%" + search + "%') LIMIT 100;")
+        rows = cur.fetchall()
+        cur.close()
+        
+        print len(rows)
+        autores =[]
+        i=0
+        while i<len(rows):
+            autores.append(rows[i][0] + " - " + rows[i][1])
+            print i
+            i = i +1
+        print autores
+        returndata = ["blue shoes", "red shoes"]
+        
+        # format what you return
+        
+        print search
+        return HttpResponse(simplejson.dumps(autores), mimetype='application/json')
+        #return render_to_response('search_form.html',
+        #    {'hcpcs_autosuggest_results': rows
+        #     })
+        #
+
 def search(request):
     if 'hcpcs' in request.GET and 'state' in request.GET:
         if 'hcpcs' in request.GET and request.GET['hcpcs']:
             hcpcs = request.GET['hcpcs']
+            hcpcs = hcpcs.split(' -', 1)[0]
+            print "DONE!!"
+            print hcpcs
             state = request.GET['state']
+            #providers = Medicare.objects.filter(hcpcs_code__icontains=hcpcs, state__icontains=state)
+            #print providers[1].npi
+            #print providers
+            
             results = getResults(hcpcs, state)
             print results
             #products = Product.objects.filter(description__icontains=q)
