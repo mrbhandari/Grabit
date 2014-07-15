@@ -25,6 +25,14 @@ def getResults(hcpcs, state):
   cur.close()
   return rows
 
+def state_autosuggest(request):
+    if 'term' in request.GET:
+        search = request.GET['term']
+        autores = [AK, AL, AR, AZ, CA, CO, CT, DC, DE, FL, GA, HI, IA, ID, IL, IN, KS, KY, LA, MA, MD, ME, MI, MN, MO, MS, MT, NC, ND, NE, NH, NJ, NM, NV, NY, OH, OK, OR, PA, RI, SC, SD, TN, TX, UT, VA, VT, WA, WI, WV, WY]
+        return HttpResponse(simplejson.dumps(autores), mimetype='application/json')
+    
+
+
 def hcpcs_autosuggest(request):
     if 'term' in request.GET:
         search = request.GET['term']
@@ -95,7 +103,7 @@ def search(request):
              #'query': q
              })
     else:
-        error = "Welcome"
+        error = ""
         return render_to_response('search_form.html',
                                   {'error':error})
 

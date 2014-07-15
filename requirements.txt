@@ -4,8 +4,222 @@ ssh -i rahulkey.pem ubuntu@ec2-54-90-112-29.compute-1.amazonaws.com
 # old user
 #ssh -v -i rahulkey.pem ec2-user@ec2-54-243-61-145.compute-1.amazonaws.com
 
+#follow http://www.lennu.net/2012/05/14/django-deployement-installation-to-ubuntu-12-dot-04-server/
+
 #install prereq for python
 sudo apt-get update
+sudo apt-get upgrade
+
+echo "djangoserver" > /etc/hostname
+hostname -F /etc/hostname
+echo -e "\n127.0.0.1 djangoserver.local djangoserver\n" >> /etc/hosts
+
+apt-get -y install apache2-mpm-worker apache2-dev
+apt-get -y install python python-dev python-setuptools
+easy_install virtualenv virtualenvwrapper pip
+
+
+wget http://modwsgi.googlecode.com/files/mod_wsgi-3.4.tar.gz
+tar xvfz mod_wsgi-3.4.tar.gz
+cd mod_wsgi-3.4
+./configure
+make
+make install
+echo "LoadModule wsgi_module /usr/lib/apache2/modules/mod_wsgi.so" > /etc/apache2/mods-available/wsgi.load
+a2enmod wsgi
+a2dissite default
+
+
+apt-get -y install mysql-server mysql-client
+echo "CREATE DATABASE doctors;" | mysql -u root -p
+echo "CREATE USER 'apacheuser'@'localhost' IDENTIFIED BY 'thebakery';" | mysql -u root -p
+echo "GRANT ALL PRIVILEGES ON doctors.* TO 'apacheuser'@'localhost';" | mysql -u root -p
+echo "FLUSH PRIVILEGES;" | mysql -u root -p
+
+cd /srv/
+mkdir -p my_project/app my_project/app/conf/apache
+mkdir -p my_project/logs my_project/run/eggs
+virtualenv my_project/venv
+/srv/my_project/venv/bin/pip install django
+
+
+
+pushd my_project/app/
+/srv/my_project/venv/bin/python /srv/my_project/venv/bin/django-admin.py startproject webapp
+popd
+
+mkdir -p my_project/app/webapp/site_media
+mkdir -p my_project/app/templates
+cd my_project/app/conf/apache/
+
+nano django.wsgi
+
+#Paste the following code into the editor and save it.
+import os
+import sys
+
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+sys.path.insert(0, os.path.abspath(os.path.join(root_path, 'venv/lib/python2.7/site-packages/')))
+sys.path.insert(0, os.path.abspath(os.path.join(root_path, 'app')))
+sys.path.insert(0, os.path.abspath(os.path.join(root_path, 'app', 'webapp')))
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'webapp.settings'
+
+import django.core.handlers.wsgi
+application = django.core.handlers.wsgi.WSGIHandler()
+
+
+
+#Create system user http://www.lennu.net/2012/05/14/django-deployement-installation-to-ubuntu-12-dot-04-server/
+useradd --system --no-create-home --home-dir /data/Grabit/mysite/ --user-group apacheuser
+chsh -s /bin/bash apacheuser
+vim /etc/apache2/sites-available/thetrackrec.conf
+
+
+#pasted file below
+
+
+<VirtualHost *:80>
+ServerAdmin root@thetrackrec
+ServerName thetrackrec
+
+Alias /site_media/ /srv/my_project/app/webapp/site_media/
+Alias /static/ /srv/my_project/venv/lib/python2.7/site-packages/django/contrib/admin/static/
+Alias /robots.txt /srv/my_project/app/webapp/site_media/robots.txt
+Alias /favicon.ico /srv/my_project/app/webapp/site_media/favicon.ico
+
+CustomLog "|/usr/sbin/rotatelogs /srv/my_project/logs/access.log.%Y%m%d-%H%M%S 5M" combined
+ErrorLog "|/usr/sbin/rotatelogs /srv/my_project/logs/error.log.%Y%m%d-%H%M%S 5M"
+LogLevel warn
+
+WSGIDaemonProcess thetrackrec user=apacheuser group=apacheuser processes=1 threads=15 maximum-requests=10000 python-path=/srv/my_project/venv/lib/python2.7/site-packages python-eggs=/srv/my_project/run/eggs
+WSGIProcessGroup thetrackrec
+WSGIScriptAlias / /srv/my_project/app/conf/apache/django.wsgi
+
+<Directory /srv/my_project/app/webapp/site_media>
+Order deny,allow
+Allow from all
+Options -Indexes FollowSymLinks
+</Directory>
+
+<Directory /srv/my_project/app/conf/apache>
+Order deny,allow
+Allow from all
+</Directory>
+
+</VirtualHost>
+
+
+
+#start new server
+a2ensite thetrackrec
+apt-get build-dep python-mysqldb
+/srv/my_project/venv/bin/pip install MySQL-python
+
+
+cd ../../
+cd webapp/webapp/
+nano settings.py
+
+DATABASES = {
+  'default': {
+      'ENGINE': 'django.db.backends.mysql',
+      'NAME': 'doctors',
+      'USER': 'root',
+      'PASSWORD': 'thebakery',
+  }
+}
+
+MEDIA_ROOT = '/srv/my_project/app/webapp/site_media/'
+TEMPLATE_DIRS = '/srv/my_project/app/templates/'
+
+
+chown -R apacheuser:apacheuser /srv/my_project/
+sudo service apache2 restart
+
+
+sudo apt-get install git
+
+
+#get git repo
+cd ../../..
+cd /data
+git clone https://github.com/mrbhandari/Grabit.git
+cd Grabit/mysite/
+
+#activate virtual env
+source /srv/my_project/venv/bin/activate
+python manage.py runserver 0.0.0.0:80
+
+
+
+vim django.wsgi 
+
+import os
+import sys
+
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+sys.path.insert(0, os.path.abspath(os.path.join(root_path, 'venv/lib/python2.7/site-packages/')))
+sys.path.insert(0, os.path.abspath(os.path.join(root_path, 'app')))
+sys.path.insert(0, os.path.abspath(os.path.join(root_path, 'app', 'Grabit', 'mysite')))
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'mysite.settings'
+
+import django.core.handlers.wsgi
+application = django.core.handlers.wsgi.WSGIHandler()
+
+
+#Switch to your local and send medicare file
+scp -i rahulkey.pem medicare.tsv ubuntu@ec2-54-90-112-29.compute-1.amazonaws.com:~
+
+
+
+#adding medicare table and creating the fields
+mysql --local-infile -u root -p
+thebakery
+create database doctors;
+
+
+#create standard Django table
+cd /srv/my_project/app/Grabit
+python manage.py validate
+python manage.py sqlall product_data
+
+#check output then ...
+python manage.py syncdb
+
+
+mysql --local-infile -u root -p
+use doctors;
+create table medicare ( npi varchar(10), last_name varchar(100), first_name varchar(100), middle_name varchar(100), credentials varchar(1000), gender varchar(10), entity_code varchar(2), street1 varchar(1024), street2 varchar(1024), city varchar(1024), zip_code varchar(100), state varchar(512), country varchar(100), provider_type varchar(1024), medicare_indicator varchar(2), place_of_service varchar(10), hcpcs_code varchar(100), hcpcs_description varchar(1024), num_services int, num_uniq_users int, num_uniq_users_per_day int, avg_medicare_amt double, std_dev_medicare_amt double, avg_submitted_amt  double, std_dev_submitted_amt double, avg_medicare_payment double, std_dev_medicare_payment double);
+
+
+#switch back to ec2 to load the data
+cp /home/ubuntu/medicare.tsv /data/medicare/medicare.tsv
+mysql --local-infile -u root -p
+thebakery
+use doctors;
+LOAD DATA LOCAL INFILE '/data/medicare/medicare.tsv' into TABLE medicare LINES TERMINATED BY '\n';
+select count(*) from medicare;
+
+#check output
+
+#ALTER TABLE product_data_medicare ADD id int;
+#add index speed up performance
+#Create table for autosuggest
+
+Create table hcpcs_autosuggest select hcpcs_code, hcpcs_description from medicare group by hcpcs_code, hcpcs_description order by sum(num_uniq_users) desc;
+ALTER TABLE `medicare` ADD INDEX `hcpcs_code` (`hcpcs_code`);
+
+
+
+
+
+
+
+xxxxxxxxxx
+
+
 sudo apt-get install build-essential
 sudo apt-get install libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev
 
@@ -34,7 +248,7 @@ wget http://python-distribute.org/distribute_setup.py
 python distribute_setup.py
 pip install Django
 
-sudo apt-get install git
+
 sudo apt-get install python2.7-dev
 pip install beautifulsoup4
 pip install python-devel
@@ -79,13 +293,6 @@ sudo apt-get install python-mysqldb
 #yum install libxslt-devel
 pip install lxml
 
-#get git repo
-cd ../../..
-cd /data
-git clone https://github.com/mrbhandari/Grabit.git
-cd Grabit/mysite/
-python manage.py runserver 0.0.0.0:80
-
 
 cd Grabit/mysite/
 mkdir temp
@@ -119,91 +326,9 @@ sudo service httpd restart
 #python hugo_fetch2.py
 
 
-#installing medicare table and creating the fields
-mysql --local-infile -u root -p
-thebakery
-create database doctors;
-python manage.py validate
-python manage.py sqlall product_data
-
-#check output then ...
-python manage.py syncdb
-
-mysql --local-infile -u root -p
-use doctors;
-create table product_data_medicare ( npi varchar(10), last_name varchar(100), first_name varchar(100), middle_name varchar(100), credentials varchar(1000), gender varchar(10), entity_code varchar(2), street1 varchar(1024), street2 varchar(1024), city varchar(1024), zip_code varchar(100), state varchar(512), country varchar(100), provider_type varchar(1024), medicare_indicator varchar(2), place_of_service varchar(10), hcpcs_code varchar(100), hcpcs_description varchar(1024), num_services int, num_uniq_users int, num_uniq_users_per_day int, avg_medicare_amt double, std_dev_medicare_amt double, avg_submitted_amt  double, std_dev_submitted_amt double, avg_medicare_payment double, std_dev_medicare_payment double);
-
-#Switch to your local and send medicare file
-scp -i rahulkey.pem medicare.tsv ubuntu@ec2-54-91-82-107.compute-1.amazonaws.com:~
-
-#switch back to ec2 to load the data
-sudo su
-cd ~
-cp medicare.tsv /data/medicare.tsv
-mysql --local-infile -u root -p
-thebakery
-use doctors;
-LOAD DATA LOCAL INFILE '/data/medicare.tsv' into TABLE medicare LINES TERMINATED BY '\n';
 
 
-#ALTER TABLE product_data_medicare ADD id int;
-#add index speed up performance
-#Create table for autosuggest
-Create table hcpcs_autosuggest select hcpcs_code, hcpcs_description from medicare group by hcpcs_code, hcpcs_description order by sum(num_uniq_users) desc;
-ALTER TABLE `medicare` ADD INDEX `hcpcs_code` (`hcpcs_code`);
 
-#Create system user http://www.lennu.net/2012/05/14/django-deployement-installation-to-ubuntu-12-dot-04-server/
-useradd --system --no-create-home --home-dir /data/Grabit/mysite/ --user-group apacheuser
-chsh -s /bin/bash apacheuser
-vim /etc/apache2/sites-available/thetrackrec.conf
-
-
-#pasted file below
-
-
-<VirtualHost *:80>
-ServerAdmin root@thetrackrec
-ServerName thetrackrec
-
-#Alias /site_media/ /srv/my_project/app/webapp/site_media/
-#Alias /static/ /srv/my_project/venv/lib/python2.7/site-packages/django/contrib/admin/static/
-#Alias /robots.txt /srv/my_project/app/webapp/site_media/robots.txt
-#Alias /favicon.ico /srv/my_project/app/webapp/site_media/favicon.ico
-
-#CustomLog "|/usr/sbin/rotatelogs /srv/my_project/logs/access.log.%Y%m%d-%H%M%S 5M" combined
-#ErrorLog "|/usr/sbin/rotatelogs /srv/my_project/logs/error.log.%Y%m%d-%H%M%S 5M"
-LogLevel warn
-
-WSGIDaemonProcess thetrackrec user=apacheuser group=apacheuser processes=1 threads=15 maximum-requests=10000
-#python-path=/srv/my_project/venv/lib/python2.7/site-packages python-eggs=/srv/my_project/run/eggs
-WSGIProcessGroup thetrackrec
-WSGIScriptAlias / /data/Grabit/mysite/hugoFetch.wsgi 
-#/srv/my_project/app/conf/apache/django.wsgi
-
-#<Directory /srv/my_project/app/webapp/site_media>
-#Order deny,allow
-#Allow from all
-#Options -Indexes FollowSymLinks
-#</Directory>
-
-<Directory /data/Grabit/mysite>
-#/srv/my_project/app/conf/apache>
-Order allow,deny
-Allow from all
-</Directory>
-
-</VirtualHost>
-
-
-#start new server
-a2ensite thetrackrec
-chown -R apacheuser:apacheuser /data/Grabit/mysite/
-sudo service apache2 restart
-
-
-echo "djangoserver" > /etc/hostname
-hostname -F /etc/hostname
-echo -e "\n127.0.0.1 djangoserver.local djangoserver\n" >> /etc/hosts
 apt-get -y install apache2-mpm-worker apache2-dev
 easy_install virtualenv virtualenvwrapper
 
@@ -218,13 +343,11 @@ a2enmod wsgi
 a2dissite 000-default
 
 
-echo "CREATE USER 'apacheuser'@'localhost' IDENTIFIED BY 'thebakery';" | mysql -u root -p
-echo "GRANT ALL PRIVILEGES ON doctors.* TO 'apacheuser'@'localhost';" | mysql -u root -p
-echo "FLUSH PRIVILEGES;" | mysql -u root -p
 
 
 #rahul local server start
 #/opt/local/share/mysql5/mysql/mysql.server start
+
 
 
 

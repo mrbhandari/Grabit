@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 admin.autodiscover()
-from mysite.views import hello, search, hcpcs_autosuggest
+from mysite.views import hello, search, hcpcs_autosuggest, state_autosuggest
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -12,5 +12,6 @@ urlpatterns = patterns('',
                        (r'^admin/', include(admin.site.urls)),
                        (r'^search/$', search),
                        (r'^hcpcs_autosuggest/$', hcpcs_autosuggest),
+                       (r'^state_autosuggest/$', state_autosuggest),
 )
 
